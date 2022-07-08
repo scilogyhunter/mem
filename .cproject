@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="org.eclipse.cdt.core.default.config.1459347902">
+			<storageModule buildSystemId="org.eclipse.cdt.core.defaultConfigDataProvider" id="org.eclipse.cdt.core.default.config.1459347902" moduleId="org.eclipse.cdt.core.settings" name="Configuration">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+		<pathentry kind="mac" name="__GNUC__" path="" value="4"/>
+		<pathentry kind="mac" name="SYLIXOS" path="" value=""/>
+		<pathentry kind="mac" name="__sparc__" path="" value=""/>
+		<pathentry base-ref="mem" include="D:/work/lc3233/leon3/base1129/libsylixos/SylixOS" kind="inc" path="" system="true"/>
+		<pathentry base-ref="mem" include="D:/work/lc3233/leon3/base1129/libsylixos/SylixOS/include" kind="inc" path="" system="true"/>
+		<pathentry base-ref="mem" include="D:/work/lc3233/leon3/base1129/libcextern/libcextern/include" kind="inc" path="" system="true"/>
+		<pathentry base-ref="mem" include="C:/ACOINFO/RealEvo/compiler/sparc-sylixos-toolchain/lib/gcc/sparc-sylixos-elf/4.9.3/include" kind="inc" path="" system="true"/>
+		<pathentry base-ref="mem" include="C:/ACOINFO/RealEvo/compiler/sparc-sylixos-toolchain/sparc-sylixos-elf/include" kind="inc" path="" system="true"/>
+		<pathentry base-ref="mem" include="D:/work/lc3233/leon3/base1129/libsylixos/SylixOS/include/network" kind="inc" path="" system="true"/>
+		<pathentry excluding="obj|dep" kind="out" path="Debug"/>
+		<pathentry excluding="obj|dep" kind="out" path="Release"/>
+	</storageModule>
+</cproject>
