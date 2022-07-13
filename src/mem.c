@@ -34,6 +34,7 @@
 /*********************************************************************************************************
   读写宏函数
 *********************************************************************************************************/
+#if !defined(read8) && !defined(write8)
 #define read8(a)                (*(volatile UINT8  *)(a))
 #define read16(a)               (*(volatile UINT16 *)(a))
 #define read32(a)               (*(volatile UINT32 *)(a))
@@ -43,6 +44,7 @@
 #define write16(d, a)           (*(volatile UINT16 *)(a) = (d))
 #define write32(d, a)           (*(volatile UINT32 *)(a) = (d))
 #define write64(d, a)           (*(volatile UINT64 *)(a) = (d))
+#endif
 /*********************************************************************************************************
   操作宏
 *********************************************************************************************************/
@@ -106,9 +108,11 @@ static VOID  memoryHelp (VOID)
        "mem  -r[8/16/32] <saddr> <length>         memory read\n"
        "mem  -w[8/16/32] <daddr> <d0> [d1] [d2]...memory write\n"
        "mem  -s[8/16/32] <daddr> <value> <length> memory set\n"
+       "mem  -g[8/16/32] <daddr> <saddr> <length> memory get\n"
+       "mem  -p[8/16/32] <daddr> <saddr> <length> memory put\n"
        "mem  -c[8/16/32] <daddr> <saddr> <length> memory copy\n"
-       "mem  -p[8/16/32] <daddr> <saddr> <length> memory compare\n"
-       "mem  -t[8/16/32] <daddr> <length>         memory test\n"
+       "mem  -m[8/16/32] <daddr> <saddr> <length> memory compare\n"
+       "mem  -t[8/16/32] <daddr> <length>         memory access test\n"
        "mem  -e[8/16/32] <daddr> <length>         memory speed test\n");
 }
 /*********************************************************************************************************
@@ -201,7 +205,8 @@ static INT  memoryParseArg (ARG_ST  *pArg, INT  iArgC, PCHAR  ppcArgV[])
         pArg->uiValue  = strtoul(ppcArgV[3], NULL, 0);
         pArg->uiLength = strtoul(ppcArgV[4], NULL, 0);
 
-    } else if ((pArg->cOperate == 'c') || (pArg->cOperate == 'p')) {
+    } else if ((pArg->cOperate == 'g') || (pArg->cOperate == 'p') || (pArg->cOperate == 'c') ||
+               (pArg->cOperate == 'm')) {
         if (iArgC < 5) {
 
             return  (PX_ERROR);
@@ -446,6 +451,92 @@ static INT  memSet (UINT32  uiDaddr, UINT32  uiLength, UINT32  uiValue, UINT32  
     return  (ERROR_NONE);
 }
 /*********************************************************************************************************
+** 函数名称: memGet
+** 功能描述: 设置内存，从一个固定地址读并设置目标内存段
+** 输    入: uiDaddr      目的地址
+**           uiLength     长度
+**           uiSaddr      源地址
+**           uiFormat     格式
+** 输    出: ERROR_CODE
+*********************************************************************************************************/
+static INT  memGet (UINT32  uiDaddr, UINT32  uiLength, UINT32  uiSaddr, UINT32  uiFormat)
+{
+    UINT32   i;
+    UINT32   uiCount;
+
+    volatile  UINT8  *pData08;
+    volatile  UINT16 *pData16;
+    volatile  UINT32 *pData32;
+
+    if (uiFormat == 1) {
+        uiCount = uiLength;
+        pData08 = (UINT8  *)uiDaddr;
+        for (i = 0; i < uiCount; i++) {
+            pData08[i] = *(volatile  UINT8  *)uiSaddr;
+        }
+
+    } else if (uiFormat == 2) {
+        uiCount = uiLength / 2;
+        pData16 = (UINT16 *)uiDaddr;
+        for (i = 0; i < uiCount; i++) {
+            pData16[i] = *(volatile  UINT16  *)uiSaddr;
+        }
+    } else if (uiFormat == 4) {
+        uiCount = uiLength / 4;
+        pData32 = (UINT32 *)uiDaddr;
+        for (i = 0; i < uiCount; i++) {
+            pData32[i] = *(volatile  UINT32  *)uiSaddr;
+        }
+    } else {
+        memoryHelp();
+    }
+
+    return  (ERROR_NONE);
+}
+/*********************************************************************************************************
+** 函数名称: memPut
+** 功能描述: 设置内存，从一段内存向一个固定地址设置数据
+** 输    入: uiDaddr      目的地址
+**           uiLength     长度
+**           uiSaddr      源地址
+**           uiFormat     格式
+** 输    出: ERROR_CODE
+*********************************************************************************************************/
+static INT  memPut (UINT32  uiDaddr, UINT32  uiLength, UINT32  uiSaddr, UINT32  uiFormat)
+{
+    UINT32   i;
+    UINT32   uiCount;
+
+    volatile  UINT8  *pData08;
+    volatile  UINT16 *pData16;
+    volatile  UINT32 *pData32;
+
+    if (uiFormat == 1) {
+        uiCount = uiLength;
+        pData08 = (UINT8  *)uiDaddr;
+        for (i = 0; i < uiCount; i++) {
+            *(volatile  UINT8  *)uiSaddr = pData08[i];
+        }
+
+    } else if (uiFormat == 2) {
+        uiCount = uiLength / 2;
+        pData16 = (UINT16 *)uiDaddr;
+        for (i = 0; i < uiCount; i++) {
+            *(volatile  UINT16  *)uiSaddr = pData16[i];
+        }
+    } else if (uiFormat == 4) {
+        uiCount = uiLength / 4;
+        pData32 = (UINT32 *)uiDaddr;
+        for (i = 0; i < uiCount; i++) {
+            *(volatile  UINT32  *)uiSaddr = pData32[i];
+        }
+    } else {
+        memoryHelp();
+    }
+
+    return  (ERROR_NONE);
+}
+/*********************************************************************************************************
 ** 函数名称: memCopy
 ** 功能描述: 内存拷贝
 ** 输    入: uiDaddr      目的地址
@@ -507,6 +598,7 @@ static INT  memCompare (UINT32  uiDaddr, UINT32  uiSaddr, UINT32  uiLength, UINT
 {
     UINT32   i;
     UINT32   uiCount;
+    UINT32   uiCountDif = 0;
 
     volatile  UINT8  *pSrcData08;
     volatile  UINT16 *pSrcData16;
@@ -521,31 +613,36 @@ static INT  memCompare (UINT32  uiDaddr, UINT32  uiSaddr, UINT32  uiLength, UINT
         pDstData08 = (UINT8  *)uiDaddr;
         for (i = 0; i < uiCount; i++) {
             if (pDstData08[i] != pSrcData08[i]) {
+                uiCountDif++;
                 PRINT_INFO("[%08x -- %08x] %02x -- %02x\n",
                             (UINT)&pDstData08[i], (UINT)&pSrcData08[i], pDstData08[i], pSrcData08[i]);
             }
         }
-
+        PRINT_INFO("different count is %u\n", uiCountDif);
     } else if (uiFormat == 2) {
         uiCount = uiLength / 2;
         pSrcData16 = (UINT16  *)uiSaddr;
         pDstData16 = (UINT16  *)uiDaddr;
         for (i = 0; i < uiCount; i++) {
             if (pDstData16[i] != pSrcData16[i]) {
+                uiCountDif++;
                 PRINT_INFO("[%08x -- %08x] %04x -- %04x\n",
                             (UINT)&pDstData16[i], (UINT)&pSrcData16[i], pDstData16[i], pSrcData16[i]);
             }
         }
+        PRINT_INFO("different count is %u\n", uiCountDif);
     } else if (uiFormat == 4) {
         uiCount = uiLength;
         pSrcData32 = (UINT32  *)uiSaddr;
         pDstData32 = (UINT32  *)uiDaddr;
         for (i = 0; i < uiCount; i++) {
             if (pDstData32[i] != pSrcData32[i]) {
+                uiCountDif++;
                 PRINT_INFO("[%08x -- %08x] %08x -- %08x\n",
                             (UINT)&pDstData32[i], (UINT)&pSrcData32[i], pDstData32[i], pSrcData32[i]);
             }
         }
+        PRINT_INFO("different count is %u\n", uiCountDif);
     } else {
         memoryHelp();
     }
@@ -703,20 +800,32 @@ INT  memAccessCmd (INT  iArgC, PCHAR  ppcArgV[])
                     pArg->uiDaddr, pArg->uiValue, pArg->uiLength, pArg->uiFormat);
         memSet(pArg->uiDaddr, pArg->uiLength, pArg->uiValue, pArg->uiFormat);
 
+    } else if (pArg->cOperate == 'g') {
+        PRINT_INFO("memory get.\n");
+        PRINT_INFO("uiDaddr = %08x, uiSaddr = %08x, uiLength = %08x, uiFormat = %d\n",
+                    pArg->uiDaddr, pArg->uiSaddr, pArg->uiLength, pArg->uiFormat);
+        memGet(pArg->uiDaddr, pArg->uiLength, pArg->uiSaddr, pArg->uiFormat);
+
+    } else if (pArg->cOperate == 'p') {
+        PRINT_INFO("memory put.\n");
+        PRINT_INFO("uiDaddr = %08x, uiSaddr = %08x, uiLength = %08x, uiFormat = %d\n",
+                    pArg->uiDaddr, pArg->uiSaddr, pArg->uiLength, pArg->uiFormat);
+        memPut(pArg->uiDaddr, pArg->uiLength, pArg->uiSaddr, pArg->uiFormat);
+
     } else if (pArg->cOperate == 'c') {
         PRINT_INFO("memory copy.\n");
         PRINT_INFO("uiDaddr = %08x, uiSaddr = %08x, uiLength = %08x, uiFormat = %d\n",
                     pArg->uiDaddr, pArg->uiSaddr, pArg->uiLength, pArg->uiFormat);
         memCopy(pArg->uiDaddr, pArg->uiSaddr, pArg->uiLength, pArg->uiFormat);
 
-    } else if (pArg->cOperate == 'p') {
+    } else if (pArg->cOperate == 'm') {
         PRINT_INFO("memory compare\n");
         PRINT_INFO("uiDaddr = %08x, uiSaddr = %08x, uiLength = %08x, uiFormat = %d\n",
                     pArg->uiDaddr, pArg->uiSaddr, pArg->uiLength, pArg->uiFormat);
         memCompare(pArg->uiDaddr, pArg->uiSaddr, pArg->uiLength, pArg->uiFormat);
 
     } else if (pArg->cOperate == 't') {
-        PRINT_INFO("memory test\n");
+        PRINT_INFO("memory access test\n");
         PRINT_INFO("uiDaddr = %08x, uiLength = %08x, uiFormat = %d\n",
                     pArg->uiDaddr, pArg->uiLength, pArg->uiFormat);
         memTest(pArg->uiDaddr,pArg->uiLength, pArg->uiFormat);
