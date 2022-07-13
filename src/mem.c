@@ -632,7 +632,7 @@ static INT  memCompare (UINT32  uiDaddr, UINT32  uiSaddr, UINT32  uiLength, UINT
         }
         PRINT_INFO("different count is %u\n", uiCountDif);
     } else if (uiFormat == 4) {
-        uiCount = uiLength;
+        uiCount = uiLength / 4;
         pSrcData32 = (UINT32  *)uiSaddr;
         pDstData32 = (UINT32  *)uiDaddr;
         for (i = 0; i < uiCount; i++) {
